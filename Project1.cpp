@@ -5,12 +5,14 @@
 #include "Project1.h"
 
 #define MAX_LOADSTRING 100
+#define KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1 : 0)
 
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 HWND  hWnd;                                     //HWND
+POINT MousePos;                                 //鼠标位置
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -114,7 +116,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
    // 窗口置顶
    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
+   // 设置一个每100毫秒触发一次的定时器
+   SetTimer(hWnd, 1, 10, NULL); 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -176,7 +179,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SelectObject(hdc, hBrush);
 
         //在此处放置更多HDC绘图
-        //Rectangle(hdc, 0, 0, 50, 100);
+        Rectangle(hdc, MousePos.x-5, MousePos.y-5, MousePos.x+5, MousePos.y+5);
 
         // 使用UpdateLayeredWindow函数将内存DC中的内容复制到窗口DC中
         POINT ptSrc = { 0, 0 };
@@ -199,6 +202,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_TIMER:
+        InvalidateRect(hWnd, NULL, TRUE); // 使整个窗口无效
+        GetCursorPos(&MousePos);          // 实时获取鼠标位置
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
