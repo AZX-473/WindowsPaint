@@ -16,11 +16,13 @@ HWND  hWnd;                                     // HWND
 POINT MousePos;                                 // 鼠标位置
 bool  CNC=false;                                // 不能点
 bool  CWT=true;                                 // 窗口名显示
+bool  CWR = true;                               // 鼠标窗口边框
 bool  IsKeyDown[256];                           // 防止重复判定
 HWND  MouseHwnd;                                // 鼠标所在窗口的HWND
 wchar_t  title[1024];                           // 所在窗口的标题
 INT_PTR ColorTime;                              // 时间
 COLORREF Colorful;
+RECT  MouseWindowRect;                          //鼠标窗口边框
 
 //  此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -28,6 +30,7 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void                DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCWSTR text, INT_PTR x, INT_PTR y);
+void                DrawRect(HDC hdc, RECT Rect);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -125,8 +128,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
    // 窗口置顶
    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-   // 设置一个每50毫秒触发一次的定时器
-   SetTimer(hWnd, 1, 50, NULL); 
+   // 设置一个每60毫秒触发一次的定时器
+   SetTimer(hWnd, 1, 60, NULL); 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -183,8 +186,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SelectObject(mdc, hPen);
         SelectObject(mdc, hBrush);
         
+        if(CWR)DrawRect(mdc, MouseWindowRect);//大面积靠后
         if(CNC) Rectangle(mdc, MousePos.x-5, MousePos.y-5, MousePos.x+5, MousePos.y+5);
         if(CWT) DrawTextAZX(mdc, Colorful, RGB(0, 0, 0), title, MousePos.x + 5, MousePos.y + 5);
+
         BitBlt(hdc, 0, 0, 1980, 1080, mdc, 0, 0, SRCCOPY);
 
         // 释放内存DC和位图
@@ -198,15 +203,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_TIMER:
         InvalidateRect(hWnd, NULL, TRUE); // 使整个窗口无效
+
         GetCursorPos(&MousePos);
-        ColorTime += 2;
+        ColorTime += 3;
         ColorTime %= 360;
         Colorful = HSLtoRGB(ColorTime, 1, 0.5f);
         MouseHwnd = WindowFromPoint(MousePos);
         GetWindowTextW(MouseHwnd, title, 512);
+        GetWindowRect(MouseHwnd, &MouseWindowRect);//获取功能相关数据
+
         if (!IsKeyDown[VK_MENU] && !IsKeyDown[VK_F2]&&KEY_DOWN(VK_MENU)&&KEY_DOWN(VK_F2)) {//Alt+F2取消/重启
             IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = true;
-
             CNC = (bool)((CNC + 1) % 2);
         }
         else if (IsKeyDown[VK_MENU] && IsKeyDown[VK_F2] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(VK_F2)) {
@@ -215,11 +222,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x57] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x57)) {//Alt+W取消/重启
             IsKeyDown[VK_MENU] = IsKeyDown[0x57] = true;
-
             CWT = (bool)((CWT + 1) % 2);
         }
         else if (IsKeyDown[VK_MENU] && IsKeyDown[0x57] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x57)) {
             IsKeyDown[VK_MENU] = IsKeyDown[0x57] = false;//防止多次判断
+        }
+
+        if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x52] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x52)) {//Alt+R取消/重启
+            IsKeyDown[VK_MENU] = IsKeyDown[0x52] = true;
+            CWR = (bool)((CWR + 1) % 2);
+        }
+        else if (IsKeyDown[VK_MENU] && IsKeyDown[0x52] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x52)) {
+            IsKeyDown[VK_MENU] = IsKeyDown[0x52] = false;//防止多次判断
         }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -254,4 +268,20 @@ void DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCWSTR 
     TextOutW(hdc, (int)x, (int)y, text, wcslen(text));
     SetTextColor(hdc, LastTextColor);
     SetBkColor(hdc, LastBackGroundColor);
+}
+
+void DrawRect(HDC hdc, RECT Rect) {
+    HPEN hPen = CreatePen(PS_SOLID, 2, Colorful); // 彩色边框
+    HBRUSH hBrush = CreateSolidBrush(RGB(0,0,0)); // 透明填充
+    SelectObject(hdc, hPen);
+    SelectObject(hdc, hBrush);
+    
+    INT_PTR left = Rect.left, right = Rect.right, top = Rect.top, bottom = Rect.bottom;
+    Rectangle(hdc, left, top, right, bottom);
+
+    hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // 透明边框
+    hBrush = CreateSolidBrush(Colorful); // 彩色填充
+    SelectObject(hdc, hPen);
+    SelectObject(hdc, hBrush);
+    return;
 }
