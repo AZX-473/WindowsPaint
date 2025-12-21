@@ -305,16 +305,16 @@ void DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCWSTR 
 void DrawRect(HDC hdc, RECT Rect) {
     HPEN hPen = CreatePen(PS_SOLID, 2, Colorful); // 彩色边框
     HBRUSH hBrush = CreateSolidBrush(RGB(0,0,0)); // 透明填充
-    SelectObject(hdc, hPen);
-    SelectObject(hdc, hBrush);
+    HGDIOBJ hOldPen = SelectObject(hdc, hPen);
+    HGDIOBJ hOldBrush = SelectObject(hdc, hBrush);
     
     INT_PTR left = Rect.left, right = Rect.right, top = Rect.top, bottom = Rect.bottom;
     Rectangle(hdc, left, top, right, bottom);
 
     hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // 透明边框
     hBrush = CreateSolidBrush(Colorful); // 彩色填充
-    SelectObject(hdc, hPen);
-    SelectObject(hdc, hBrush);
+    SelectObject(hdc, hOldPen);
+    SelectObject(hdc, hOldBrush);
     DeleteObject(hPen);
     DeleteObject(hBrush);
     return;
@@ -329,8 +329,8 @@ void RectGoToNew(RECT NewRect) {
 void DrawMouseLine(HDC hdc) {
     HPEN hPen = CreatePen(PS_SOLID, 2, Colorful); // 彩色边框
     HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0)); // 透明填充
-    SelectObject(hdc, hPen);
-    SelectObject(hdc, hBrush);
+    HGDIOBJ hOldPen = SelectObject(hdc, hPen);
+    HGDIOBJ hOldBrush = SelectObject(hdc, hBrush);
 
     MoveToEx(hdc, 0, MousePos.y, NULL);
     LineTo(hdc, MousePos.x - 10, MousePos.y);
@@ -342,10 +342,8 @@ void DrawMouseLine(HDC hdc) {
     MoveToEx(hdc, MousePos.x, MousePos.y+10, NULL);
     LineTo(hdc, MousePos.x, 1080);
 
-    hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // 透明边框
-    hBrush = CreateSolidBrush(Colorful); // 彩色填充
-    SelectObject(hdc, hPen);
-    SelectObject(hdc, hBrush);
+    SelectObject(hdc, hOldPen);
+    SelectObject(hdc, hOldBrush);
     DeleteObject(hPen);
     DeleteObject(hBrush);
     return;
