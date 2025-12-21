@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "Project1.h"
+#include <graphics.h>
 
 #define MAX_LOADSTRING 100
 #define KEY_DOWN(VK_NONAME) ((GetAsyncKeyState(VK_NONAME) & 0x8000) ? 1 : 0)
@@ -11,16 +12,22 @@
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
-HWND  hWnd;                                     //HWND
-POINT MousePos;                                 //鼠标位置
-bool  CNC;                                      //不能点
-bool  IsKeyDown[256];                           //防止重复判定
+HWND  hWnd;                                     // HWND
+POINT MousePos;                                 // 鼠标位置
+bool  CNC=false;                                // 不能点
+bool  CWT=true;                                 // 窗口名显示
+bool  IsKeyDown[256];                           // 防止重复判定
+HWND  MouseHwnd;                                // 鼠标所在窗口的HWND
+wchar_t  title[1024];                           // 所在窗口的标题
+INT_PTR ColorTime;                              // 时间
+COLORREF Colorful;
 
-// 此代码模块中包含的函数的前向声明:
+//  此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+void                DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCWSTR text, INT_PTR x, INT_PTR y);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -120,8 +127,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
    // 设置一个每50毫秒触发一次的定时器
    SetTimer(hWnd, 1, 50, NULL); 
-   // 不可以按下鼠标
-   CNC = true;
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -173,14 +178,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //SetBkColor(hdc, RGB(0,0,0));
         // 设置画笔和笔刷
         HPEN hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // 透明边框
-        HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255)); // 白色填充
+        HBRUSH hBrush = CreateSolidBrush(Colorful); // 彩色填充
 
         SelectObject(mdc, hPen);
         SelectObject(mdc, hBrush);
-
-
+        
         if(CNC) Rectangle(mdc, MousePos.x-5, MousePos.y-5, MousePos.x+5, MousePos.y+5);
-
+        if(CWT) DrawTextAZX(mdc, Colorful, RGB(0, 0, 0), title, MousePos.x + 5, MousePos.y + 5);
         BitBlt(hdc, 0, 0, 1980, 1080, mdc, 0, 0, SRCCOPY);
 
         // 释放内存DC和位图
@@ -194,8 +198,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_TIMER:
         InvalidateRect(hWnd, NULL, TRUE); // 使整个窗口无效
-        GetCursorPos(&MousePos);          // 实时获取鼠标位置
-
+        GetCursorPos(&MousePos);
+        ColorTime += 2;
+        ColorTime %= 360;
+        Colorful = HSLtoRGB(ColorTime, 1, 0.5f);
+        MouseHwnd = WindowFromPoint(MousePos);
+        GetWindowTextW(MouseHwnd, title, 512);
         if (!IsKeyDown[VK_MENU] && !IsKeyDown[VK_F2]&&KEY_DOWN(VK_MENU)&&KEY_DOWN(VK_F2)) {//Alt+F2取消/重启
             IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = true;
 
@@ -203,6 +211,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         else if (IsKeyDown[VK_MENU] && IsKeyDown[VK_F2] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(VK_F2)) {
             IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = false;//防止多次判断
+        }
+
+        if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x57] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x57)) {//Alt+W取消/重启
+            IsKeyDown[VK_MENU] = IsKeyDown[0x57] = true;
+
+            CWT = (bool)((CWT + 1) % 2);
+        }
+        else if (IsKeyDown[VK_MENU] && IsKeyDown[0x57] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x57)) {
+            IsKeyDown[VK_MENU] = IsKeyDown[0x57] = false;//防止多次判断
         }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -228,4 +245,13 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+void DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCWSTR text, INT_PTR x, INT_PTR y) {
+    //for (int i = 0; text[i]; i++) TextLong++;
+    COLORREF LastTextColor = SetTextColor(hdc, TextColor);
+    COLORREF LastBackGroundColor = SetBkColor(hdc, BackGroundColor);
+    // TextOutW 需要 int 长度参数，显式转换以消除 C4244 警告
+    TextOutW(hdc, (int)x, (int)y, text, wcslen(text));
+    SetTextColor(hdc, LastTextColor);
+    SetBkColor(hdc, LastBackGroundColor);
 }
