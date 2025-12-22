@@ -23,8 +23,9 @@ HWND  MouseHwnd;                                // 鼠标所在窗口的HWND
 wchar_t  title[1024];                           // 所在窗口的标题
 INT_PTR ColorTime;                              // 时间
 COLORREF Colorful;
-RECT  MouseWindowRect;                          //鼠标窗口边框
-RECT NowRect;                                   //显示边框
+RECT  MouseWindowRect;                          // 鼠标窗口边框
+RECT NowRect;                                   // 显示边框
+POINT FastMouse[256]; INT_PTR FMP;              // 连点器
 
 //  此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -35,6 +36,8 @@ void                DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGround
 void                DrawRect(HDC hdc, RECT Rect);
 void                RectGoToNew(RECT NewRect);
 void                DrawMouseLine(HDC hdc);
+void                FastMousePos(HDC hdc, POINT point);
+void                SimulateLeftClick(int x, int y);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -202,8 +205,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         RectGoToNew(MouseWindowRect);
         if (CWR) DrawRect(mdc, NowRect);
         if (CNC) Rectangle(mdc, MousePos.x - 5, MousePos.y - 5, MousePos.x + 5, MousePos.y + 5);
-        if (CWT) DrawTextAZX(mdc, Colorful, RGB(0, 0, 0), title, MousePos.x + 5, MousePos.y + 5);
+        if (CWT) DrawTextAZX(mdc, Colorful, RGB(0, 0, 0), title, MousePos.x + 5, MousePos.y + 5); 
         if (DML) DrawMouseLine(mdc);
+        for (int i = 0; i < FMP; i++) FastMousePos(mdc, FastMouse[i]);
 
         // 6. 恢复旧对象并删除资源
         SelectObject(mdc, hOldBrush);
@@ -267,6 +271,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         else if (IsKeyDown[VK_MENU] && IsKeyDown[0x4C] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x4C)) {
             IsKeyDown[VK_MENU] = IsKeyDown[0x4C] = false;//防止多次判断
         }
+
+        if (!IsKeyDown[VK_MENU] && !IsKeyDown[VK_OEM_4] && KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_4)) {//Alt+[取消/重启
+            IsKeyDown[VK_MENU] = IsKeyDown[VK_OEM_4] = true;
+            FastMouse[FMP++] = MousePos;
+        }
+        else if (IsKeyDown[VK_MENU] && IsKeyDown[VK_OEM_4] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(VK_OEM_4)) {
+            IsKeyDown[VK_MENU] = IsKeyDown[VK_OEM_4] = false;//防止多次判断
+        }
+
+        if (KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_6)) FMP = 0;//Alt+]清除
+
+        if (KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_1))
+            for (int i = 0; i < FMP; i++)
+                SimulateLeftClick(FastMouse[i].x, FastMouse[i].y);//Alt+:连点
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -311,8 +329,6 @@ void DrawRect(HDC hdc, RECT Rect) {
     INT_PTR left = Rect.left, right = Rect.right, top = Rect.top, bottom = Rect.bottom;
     Rectangle(hdc, left, top, right, bottom);
 
-    hPen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // 透明边框
-    hBrush = CreateSolidBrush(Colorful); // 彩色填充
     SelectObject(hdc, hOldPen);
     SelectObject(hdc, hOldBrush);
     DeleteObject(hPen);
@@ -347,4 +363,26 @@ void DrawMouseLine(HDC hdc) {
     DeleteObject(hPen);
     DeleteObject(hBrush);
     return;
+}
+void FastMousePos(HDC hdc, POINT point) {
+    HPEN hPen = CreatePen(PS_SOLID, 2, Colorful); // 彩色边框
+    HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0)); // 透明填充
+    HGDIOBJ hOldPen = SelectObject(hdc, hPen);
+    HGDIOBJ hOldBrush = SelectObject(hdc, hBrush);
+
+    Ellipse(hdc, point.x - 5, point.y - 5, point.x + 5, point.y + 5);
+
+    SelectObject(hdc, hOldPen);
+    SelectObject(hdc, hOldBrush);
+    DeleteObject(hPen);
+    DeleteObject(hBrush);
+    return;
+}
+
+void SimulateLeftClick(int x, int y) {
+    // 设置鼠标位置
+    SetCursorPos(x, y);
+    // 模拟左键按下和释放
+    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
