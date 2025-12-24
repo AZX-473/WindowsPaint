@@ -26,6 +26,7 @@ COLORREF Colorful;
 RECT  MouseWindowRect;                          // 鼠标窗口边框
 RECT NowRect;                                   // 显示边框
 POINT FastMouse[256]; INT_PTR FMP;              // 连点器
+LONG Bottom, Top, Left, Right,width=1280,height=720;               // 单击
 
 //  此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -38,6 +39,7 @@ void                RectGoToNew(RECT NewRect);
 void                DrawMouseLine(HDC hdc);
 void                FastMousePos(HDC hdc, POINT point);
 void                SimulateLeftClick(int x, int y);
+void                NFT(LONG *Old, LONG ToNew, double Tnum);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -179,11 +181,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
 
-        // 1. 获取实际客户区大小
-        RECT rcClient;
-        GetClientRect(hWnd, &rcClient);
-        int width = rcClient.right - rcClient.left;
-        int height = rcClient.bottom - rcClient.top;
+        width = GetSystemMetrics(SM_CXSCREEN);
+        height = GetSystemMetrics(SM_CYSCREEN);
 
         // 2. 创建兼容缓冲区
         HDC mdc = CreateCompatibleDC(hdc);
@@ -285,6 +284,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_1))
             for (int i = 0; i < FMP; i++)
                 SimulateLeftClick(FastMouse[i].x, FastMouse[i].y);//Alt+:连点
+        if (KEY_DOWN(VK_LBUTTON)) {
+            NFT(&Bottom, (LONG)0, (double)0.5);
+            NFT(&Top, width, (double)0.5);
+            NFT(&Left, (LONG)0, (double)0.5);
+            NFT(&Right, height, (double)0.5);
+        }
+        else {
+            NFT(&Bottom, MousePos.x, (double)0.5);
+            NFT(&Top, MousePos.x, (double)0.5);
+            NFT(&Left, MousePos.y, (double)0.5);
+            NFT(&Right, MousePos.y, (double)0.5);
+        }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -336,10 +347,10 @@ void DrawRect(HDC hdc, RECT Rect) {
     return;
 }
 void RectGoToNew(RECT NewRect) {
-    NowRect.left = (NowRect.left + NewRect.left) / 2;
-    NowRect.right = (NowRect.right + NewRect.right) / 2;
-    NowRect.top = (NowRect.top + NewRect.top) / 2;
-    NowRect.bottom = (NowRect.bottom + NewRect.bottom) / 2;
+    NFT(&NowRect.bottom, NewRect.bottom, (double)0.5);
+    NFT(&NowRect.top, NewRect.top, (double)0.5);
+    NFT(&NowRect.left, NewRect.left, (double)0.5);
+    NFT(&NowRect.right, NewRect.right, (double)0.5);
     return;
 }
 void DrawMouseLine(HDC hdc) {
@@ -348,15 +359,16 @@ void DrawMouseLine(HDC hdc) {
     HGDIOBJ hOldPen = SelectObject(hdc, hPen);
     HGDIOBJ hOldBrush = SelectObject(hdc, hBrush);
 
-    MoveToEx(hdc, 0, MousePos.y, NULL);
-    LineTo(hdc, MousePos.x - 10, MousePos.y);
-    MoveToEx(hdc, MousePos.x+10, MousePos.y, NULL);
-    LineTo(hdc, 1980, MousePos.y);
+    bool tmp = KEY_DOWN(VK_LBUTTON);
+    MoveToEx(hdc, 0, Left, NULL);
+    LineTo(hdc, MousePos.x - 10, MousePos.y-tmp*10);
+    MoveToEx(hdc, MousePos.x+10, MousePos.y+ tmp * 10, NULL);
+    LineTo(hdc, width, Right);
 
-    MoveToEx(hdc, MousePos.x, 0, NULL);
-    LineTo(hdc, MousePos.x, MousePos.y-10);
-    MoveToEx(hdc, MousePos.x, MousePos.y+10, NULL);
-    LineTo(hdc, MousePos.x, 1080);
+    MoveToEx(hdc, Top, 0, NULL);
+    LineTo(hdc, MousePos.x+ tmp * 10, MousePos.y-10);
+    MoveToEx(hdc, MousePos.x- tmp * 10, MousePos.y+10, NULL);
+    LineTo(hdc, Bottom, height);
 
     SelectObject(hdc, hOldPen);
     SelectObject(hdc, hOldBrush);
@@ -393,4 +405,9 @@ void SimulateLeftClick(int x, int y) {
     // 模拟左键按下和释放
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+}
+
+void NFT(LONG *Old, LONG ToNew, double Tnum) {
+    *Old = *Old + (LONG)((ToNew - *Old) * Tnum);
+    return;
 }
