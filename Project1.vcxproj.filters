@@ -27,6 +27,21 @@
     <ClInclude Include="Project1.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="WindowsFunction.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Tick.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Paint.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Function.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Project1.cpp">
