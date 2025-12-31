@@ -1,12 +1,28 @@
+<div align="center">
+
+<img alt="LOGO" src="./Project1.ico" width="256" height="256" />
+
 # AZXWindows
+
+## è½¯ä»¶ç®€ä»‹
+
+ï¼ˆæš‚ç©ºï¼‰
+
+## ç¼–è¯‘
+
+é¡¹ç›®ä½¿ç”¨ Visual Studio 2022 æ„é€ å’Œç¼–è¾‘
+
+æ ¸å¿ƒæ–‡ä»¶: Project1.cpp
+
+ç¼–è¯‘å™¨: MSVC
+
+## æŠ€æœ¯æ ˆ
+
+- [EasyX](https://easyx.cn/)ï¼ˆä»…é™å›¾å½¢åº“çš„HSLtoRGBåº“ï¼‰
+- WIN32
+
 ---
-# ¹¤¾ß
-### ÏîÄ¿Ê¹ÓÃ Visual Studio 2022 ¹¹ÔìºÍ±à¼­
-### Ô´ÎÄ¼ş: Project1.cpp
-### ±àÒëÆ÷: MSVC
----
-# Ê¹ÓÃ¿â
-### ³ı[EasyX](https://easyx.cn/)Í¼ĞÎ¿âµÄHSLtoRGB¿âÍâ
-### ËùÓĞº¯Êı&´úÂë¾ùÓÉÔ­°æC++ WIN32ÊµÏÖ
----
-## [ÏîÄ¿BiliBili](https://www.bilibili.com/video/BV1rLBiBaEaG)
+
+## é¡¹ç›®è´¦å·
+
+[BiliBili](https://www.bilibili.com/video/BV1rLBiBaEaG)
