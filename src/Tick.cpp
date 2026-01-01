@@ -1,87 +1,82 @@
-/*
-    这段代码旨在处理每一帧的数据
-*/
-#pragma once
+#include "Tick.h"
+
 void Tick()
 {
-    InvalidateRect(hWnd, NULL, TRUE); // 使整个窗口无效,从而触发绘画
+    InvalidateRect(hWnd, NULL, TRUE);
 
     GetCursorPos(&MousePos);
-    // ColorTime += 3;
-    // ColorTime %= 360;
-    // Colorful = HSLtoRGB(ColorTime, 1, 0.5f);
     MouseHwnd = WindowFromPoint(MousePos);
     GetWindowTextA(MouseHwnd, title, 512);
-    GetWindowRect(MouseHwnd, &MouseWindowRect); // 获取功能相关数据
+    GetWindowRect(MouseHwnd, &MouseWindowRect);
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[VK_F2] && KEY_DOWN(VK_MENU) && KEY_DOWN(VK_F2))
-    { // Alt+F2取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = true;
         CNC = (bool)((CNC + 1) % 2);
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[VK_F2] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(VK_F2))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[VK_F2] = false;
     }
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x57] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x57))
-    { // Alt+W取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[0x57] = true;
         CWT = (bool)((CWT + 1) % 2);
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[0x57] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x57))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[0x57] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[0x57] = false;
     }
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x52] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x52))
-    { // Alt+R取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[0x52] = true;
         CWR = (bool)((CWR + 1) % 2);
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[0x52] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x52))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[0x52] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[0x52] = false;
     }
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x4C] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x4C))
-    { // Alt+L取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[0x4C] = true;
         DML = (bool)((DML + 1) % 2);
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[0x4C] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x4C))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[0x4C] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[0x4C] = false;
     }
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[VK_OEM_4] && KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_4))
-    { // Alt+[取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[VK_OEM_4] = true;
         FastMouse[FMP++] = MousePos;
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[VK_OEM_4] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(VK_OEM_4))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[VK_OEM_4] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[VK_OEM_4] = false;
     }
 
     if (!IsKeyDown[VK_MENU] && !IsKeyDown[0x50] && KEY_DOWN(VK_MENU) && KEY_DOWN(0x50))
-    { // Alt+P取消/重启
+    {
         IsKeyDown[VK_MENU] = IsKeyDown[0x50] = true;
         VPR = (bool)((VPR + 1) % 2);
     }
     else if (IsKeyDown[VK_MENU] && IsKeyDown[0x50] && !KEY_DOWN(VK_MENU) && !KEY_DOWN(0x50))
     {
-        IsKeyDown[VK_MENU] = IsKeyDown[0x50] = false; // 防止多次判断
+        IsKeyDown[VK_MENU] = IsKeyDown[0x50] = false;
     }
 
     if (KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_6))
-        FMP = 0; // Alt+]清除
+        FMP = 0;
 
     if (KEY_DOWN(VK_MENU) && KEY_DOWN(VK_OEM_COMMA))
     {
         for (int i = 0; i < FMP; i++)
         {
-            SimulateLeftClick(FastMouse[i].x, FastMouse[i].y, false); // Alt+<左键 连点
+            SimulateLeftClick(FastMouse[i].x, FastMouse[i].y, false);
         }
     }
 
@@ -89,7 +84,7 @@ void Tick()
     {
         for (int i = 0; i < FMP; i++)
         {
-            SimulateLeftClick(FastMouse[i].x, FastMouse[i].y, true); // Alt+>右键 连点右键
+            SimulateLeftClick(FastMouse[i].x, FastMouse[i].y, true);
         }
     }
 
