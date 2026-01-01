@@ -90,6 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -137,11 +138,11 @@
     <ClCompile Include="Project1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Project1.rc" />
+    <ResourceCompile Include="resources\Project1.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Project1.ico" />
-    <Image Include="small.ico" />
+    <Image Include="resources\Project1.ico" />
+    <Image Include="resources\small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
