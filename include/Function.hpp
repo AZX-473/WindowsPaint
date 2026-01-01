@@ -1,7 +1,7 @@
 #pragma once
-#include "framework.h"
-#include "Project1.h"
-#include "Variable.h"
+#include "framework.hpp"
+#include "Project1.hpp"
+#include "Variable.hpp"
 
 void NFT(LONG *Old, LONG ToNew, double Tnum);
 void DrawTextAZX(HDC hdc, COLORREF TextColor, COLORREF BackGroundColor, LPCSTR text, INT_PTR x, INT_PTR y);

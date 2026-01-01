@@ -1,4 +1,4 @@
-#include "Function.h"
+#include "Function.hpp"
 
 void NFT(LONG *Old, LONG ToNew, double Tnum)
 {

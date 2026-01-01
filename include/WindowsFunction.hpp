@@ -1,9 +1,9 @@
 #pragma once
-#include "framework.h"
-#include "Project1.h"
-#include "Function.h"
-#include "Paint.h"
-#include "Tick.h"
+#include "framework.hpp"
+#include "Project1.hpp"
+#include "Function.hpp"
+#include "Paint.hpp"
+#include "Tick.hpp"
 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);

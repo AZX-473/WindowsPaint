@@ -1,4 +1,4 @@
-#include "Tick.h"
+#include "Tick.hpp"
 
 void Tick()
 {

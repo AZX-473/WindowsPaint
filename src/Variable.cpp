@@ -1,4 +1,4 @@
-#include "Variable.h"
+#include "Variable.hpp"
 
 HINSTANCE hInst;
 char szTitle[MAX_LOADSTRING];

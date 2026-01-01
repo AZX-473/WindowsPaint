@@ -1,4 +1,4 @@
-#include "WindowsFunction.h"
+#include "WindowsFunction.hpp"
 
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {

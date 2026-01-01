@@ -1,4 +1,4 @@
-#include "WindowsFunction.h"
+#include "WindowsFunction.hpp"
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      [[maybe_unused]] HINSTANCE hPrevInstance,

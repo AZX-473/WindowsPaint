@@ -1,4 +1,4 @@
-#include "Paint.h"
+#include "Paint.hpp"
 
 void Paint()
 {
